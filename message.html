@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Xabarlar</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+
+    <!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<!-- Firebase Database -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  // Ваши настройки (получите их в консоли Firebase)
+  const firebaseConfig = {
+    apiKey: "ВАШ_API_KEY",
+    authDomain: "ВАШ_ДОМЕН.firebaseapp.com",
+    databaseURL: "https://ВАШ_ДОМЕН.firebaseio.com",
+    projectId: "ВАШ_ID",
+    storageBucket: "ВАШ_ДОМЕН.appspot.com",
+    messagingSenderId: "ВАШ_SENDER_ID",
+    appId: "ВАШ_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
+
+
+
+
+  <style>
+    body { background: #18181b; color: #fff; font-family: 'Poppins', sans-serif; }
+    .notif-list { max-width: 600px; margin: 40px auto; padding: 0; list-style: none; }
+    .notif-item {
+      background: rgba(40,40,50,0.9);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      padding: 24px 32px 24px 80px;
+      position: relative;
+      min-height: 80px;
+      border-left: 6px solid #ffd166;
+      animation: notif-in 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+    }
+    .notif-item::before {
+      content: "";
+      position: absolute;
+      left: 24px; top: 24px;
+      width: 40px; height: 40px;
+      background: url('./assets/images/icon-app.svg') no-repeat center/contain;
+      opacity: 0.8;
+    }
+    .notif-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+    .notif-email { font-size: 0.95rem; color: #ffd166; margin-bottom: 8px; }
+    .notif-date { font-size: 0.85rem; color: #aaa; margin-bottom: 10px; }
+    @keyframes notif-in {
+      0% { transform: translateY(-30px) scale(0.95); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .notif-delete-btn {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  background: #ffd166;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.notif-delete-btn:hover {
+  background: #ff8c1a;
+  color: #fff;
+}
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center; margin-top:40px;">Yangi xabarlar</h2>
+  <ul class="notif-list" id="notif-list"></ul>
+  <audio id="notif-audio" src="/assets/sounds/notification.mp3" preload="auto"></audio>
+  <script>
+  let lastMessageCount = 0;
+
+  function timeAgo(dateValue) {
+    let timestamp;
+    if (typeof dateValue === "number") {
+      timestamp = dateValue;
+    } else {
+      const parsed = Date.parse(dateValue);
+      timestamp = isNaN(parsed) ? Date.now() : parsed;
+    }
+    const now = Date.now();
+    const diff = Math.floor((now - timestamp) / 1000);
+    if (diff < 60) return `${diff}с назад`;
+    if (diff < 3600) return `${Math.floor(diff/60)} мин назад`;
+    if (diff < 86400) return `${Math.floor(diff/3600)} ч назад`;
+    if (diff < 2592000) return `${Math.floor(diff/86400)} дн назад`;
+    if (diff < 31536000) return `${Math.floor(diff/2592000)} ой назад`;
+    return `${Math.floor(diff/31536000)} йил(лар) назад`;
+  }
+
+  function renderMessages() {
+    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    const notifList = document.getElementById('notif-list');
+    // Воспроизвести звук, если появилось новое сообщение
+    if (messages.length > lastMessageCount) {
+      document.getElementById('notif-audio').play();
+    }
+    lastMessageCount = messages.length;
+
+    notifList.innerHTML = '';
+    if (messages.length === 0) {
+      notifList.innerHTML = '<li style="text-align:center;opacity:0.7;">Xabarlar yo‘q</li>';
+    } else {
+      messages.slice().reverse().forEach((msg, idx) => {
+        const li = document.createElement('li');
+        li.className = 'notif-item';
+        li.innerHTML = `
+          <div class="notif-title">${msg.fullname}</div>
+          <div class="notif-email">${msg.email}</div>
+          <div class="notif-date">${timeAgo(msg.date)}</div>
+          <div>${msg.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          <button class="notif-delete-btn" data-index="${messages.length - 1 - idx}">🗑️ Удалить</button>
+        `;
+        notifList.appendChild(li);
+      });
+    }
+  }
+
+  renderMessages();
+
+  // Live-обновление при изменении localStorage в других вкладках
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'messages') {
+      renderMessages();
+    }
+  });
+
+  // Обновлять только "n минут назад" без перерисовки сообщений
+setInterval(() => {
+  document.querySelectorAll('.notif-date').forEach((el, i) => {
+    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    // Сообщения идут в обратном порядке
+    const msg = messages[messages.length - 1 - i];
+    if (msg) el.textContent = timeAgo(msg.date);
+  });
+}, 1000);
+
+  document.getElementById('notif-list').addEventListener('click', function(e) {
+    if (e.target.classList.contains('notif-delete-btn')) {
+      const idx = +e.target.getAttribute('data-index');
+      let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+      messages.splice(idx, 1);
+      localStorage.setItem('messages', JSON.stringify(messages));
+      renderMessages();
+    }
+  });
+</script>
+
+  
+</body>
+</html>
