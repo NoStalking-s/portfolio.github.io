@@ -1,4 +1,6 @@
 'use strict';
+import { db } from './firebase-config.js';
+import { ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
 
