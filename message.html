@@ -159,6 +159,24 @@ setInterval(() => {
   });
 </script>
 
+<script type="module">
+import { db, ref } from './assets/js/firebase-config.js';
+import { onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const messagesDiv = document.getElementById('messages');
+const messagesRef = ref(db, 'messages');
+
+onValue(messagesRef, (snapshot) => {
+  messagesDiv.innerHTML = '';
+  snapshot.forEach(child => {
+    const msg = child.val();
+    messagesDiv.innerHTML += `<div>
+      <b>${msg.fullname}</b> (${msg.email}):<br>
+      ${msg.message}<hr>
+    </div>`;
+  });
+});
+</script>
   
 </body>
 </html>
