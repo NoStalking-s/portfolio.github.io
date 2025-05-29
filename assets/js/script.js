@@ -180,25 +180,17 @@ document.body.appendChild(modal);
 const blurOverlay = document.getElementById('modal-blur-overlay');
 
 // Показать модалку с анимацией
-form.addEventListener("submit", function(e) {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const fullname = form.fullname.value;
+  const email = form.email.value;
+  const message = form.message.value;
 
-  // Получаем данные формы
-  const fullname = form.querySelector('input[name="fullname"]').value;
-  const email = form.querySelector('input[name="email"]').value;
-  const message = form.querySelector('textarea[name="message"]').value;
+  await push(ref(db, 'messages'), { fullname, email, message, date: Date.now() });
 
-  // ОТПРАВКА В FIREBASE
-  db.ref('messages').push({
-    fullname,
-    email,
-    message,
-    date: Date.now()
-  });
-
-  // Показать модалку и очистить форму
-  blurOverlay.classList.add('active');
+  // Показываем модалку
   modal.classList.add('active');
+  blurOverlay.classList.add('active');
   form.reset();
   form.querySelector("[data-form-btn]").setAttribute("disabled", "");
 });
