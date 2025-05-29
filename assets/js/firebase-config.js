@@ -1,6 +1,6 @@
 // ЗАМЕНИ значения на свои из консоли Firebase!
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBS-MxYSCoMeKcYrJoTvVlcBd8l08gO_Ms",
@@ -14,6 +14,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const analytics = getAnalytics(app);
 
 export { db, ref, push };
