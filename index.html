@@ -24,24 +24,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Firebase App (core) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<!-- Firebase Database -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script>
-  // Ваши настройки (получите их в консоли Firebase)
-  const firebaseConfig = {
-    apiKey: "ВАШ_API_KEY",
-    authDomain: "ВАШ_ДОМЕН.firebaseapp.com",
-    databaseURL: "https://ВАШ_ДОМЕН.firebaseio.com",
-    projectId: "ВАШ_ID",
-    storageBucket: "ВАШ_ДОМЕН.appspot.com",
-    messagingSenderId: "ВАШ_SENDER_ID",
-    appId: "ВАШ_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
 
 
 
@@ -1191,6 +1173,21 @@ particlesJS("particles-js", {
       "repulse": { "distance": 150, "duration": 0.5 }
     }
   }
+});
+</script>
+
+<script type="module">
+import { db, ref, push } from './assets/js/firebase-config.js';
+
+const form = document.querySelector('.form[data-form]');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fullname = form.fullname.value;
+  const email = form.email.value;
+  const message = form.message.value;
+
+  await push(ref(db, 'messages'), { fullname, email, message, date: Date.now() });
+  window.location.href = 'message.html';
 });
 </script>
 
